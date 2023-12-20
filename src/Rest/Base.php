@@ -61,9 +61,13 @@ abstract class Base extends \stdClass
 
     public function save($updateObject = false): void
     {
-        $data = self::dataDiff($this->toArray(true), $this->originalState);
-
-        $method = !empty($data[static::$PRIMARY_KEY]) ? "put" : "post";
+        if (empty($this->setProps[static::$PRIMARY_KEY])) {
+            $method = 'post';
+            $data = $this->toArray(true);
+        } else {
+            $method = 'put';
+            $data = self::dataDiff($this->toArray(true), $this->originalState);
+        }
 
         $saveBody = [static::getJsonBodyName() => $data];
         $response = self::request($method, $method, $this->session, [], [], $saveBody, $this);
@@ -263,6 +267,7 @@ abstract class Base extends \stdClass
         }
 
         if (empty($match)) {
+            dump(func_get_args());die;
             throw new RestResourceException("Could not find a path for request");
         }
 
